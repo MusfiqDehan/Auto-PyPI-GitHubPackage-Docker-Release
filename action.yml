@@ -95,24 +95,33 @@ runs:
 
     - name: Upload to GitHub Packages using Docker
       run: |
+        # Echo input variables for debugging
+        echo "GitHub Repo Name: ${{ inputs.the_github_repo_name }}"
+        echo "Docker Hub Username: ${{ inputs.dockerhub_username }}"
+        echo "Docker Image Name: ${{ inputs.docker_image_name }}"
+        echo "Version: ${{ inputs.version }}"
+        echo "GitHub Username: ${{ inputs.the_github_username }}"
+        echo "GitHub Token: ${{ inputs.github_token }}"
+    
         # Building the Docker image
         docker build -t ${{ inputs.the_github_repo_name }} .
-
+    
         # Login to Docker Hub
         # echo ${{ inputs.dockerhub_pat }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
-
+    
         # Login to GitHub Docker Packages
         echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.the_github_username }} --password-stdin
-
+    
         # Tag the image for Docker Hub
         docker tag ${{ inputs.the_github_repo_name }} ${{ inputs.dockerhub_username }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
-
+    
         # Tag the image for GitHub Docker Packages
         docker tag ${{ inputs.the_github_repo_name }} docker.pkg.github.com/${{ inputs.the_github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
-
+    
         # Push the image to Docker Hub
         docker push ${{ inputs.dockerhub_username }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
-
+    
         # Push the image to GitHub Docker Packages
-        docker push docker.pkg.github.com/${{ inputs.github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
+        docker push docker.pkg.github.com/${{ inputs.the_github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
       shell: bash
+
