@@ -37,7 +37,7 @@ jobs:
 
 
       - name: Run Release Action
-        uses: MusfiqDehan/Auto-PyPI-GitHubPackage-Docker-Release@v1.0.4
+        uses: MusfiqDehan/Auto-PyPI-GitHubPackage-Docker-Release@v1.0.6
         with:
           version: ${{ env.version }}
           pypi_token: ${{ secrets.PYPI_API_TOKEN }}
