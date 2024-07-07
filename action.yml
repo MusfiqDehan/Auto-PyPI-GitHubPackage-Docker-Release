@@ -19,6 +19,9 @@ inputs:
   dockerhub_password:
     description: 'DockerHub password'
     required: true
+  dockerhub_pat:
+    description: 'DockerHub Personal Access Token'
+    required: true
   docker_image_name:
     description: 'Docker Image Name'
     required: true
@@ -58,31 +61,9 @@ runs:
       run: echo "version=$(python setup.py --version)" >> $GITHUB_ENV
       shell: bash
 
-    - name: Check if version exists on PyPI
-      id: check-version
-      run: |
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://pypi.org/project/data-preprocessors/${{ env.version }}/)
-        if [ $response -eq 200 ]; then
-          echo "Version already exists on PyPI. Incrementing version..."
-          new_version=$(python -c "import re; v='${{ env.version }}'; parts = v.split('.'); parts[-1] = str(int(parts[-1]) + 1); print('.'.join(parts))")
-          echo "new_version=$new_version" >> $GITHUB_ENV
-        else
-          echo "Version does not exist. Using provided version."
-          echo "new_version=${{ env.version }}" >> $GITHUB_ENV
-        fi
-      shell: bash
-
-    - name: Update version in setup.py if necessary
-      run: |
-        current_version=$(grep -oP "version='\K[^']+" setup.py)
-        if [[ "${{ env.new_version }}" != "${{ current_version }}" ]]; then
-          sed -i "s/version='${{ current_version }}'/version='${{ env.new_version }}'/g" setup.py
-        fi
-      shell: bash
-
     - name: Check commit message
       run: |
-        if [[ $(git log -1 --pretty=%B) != "Release v${{ env.new_version }}" ]]; then
+        if [[ $(git log -1 --pretty=%B) != "Release v${{ inputs.version }}" ]]; then
           echo "Commit message does not match the release pattern."
           exit 1
         fi
@@ -99,33 +80,33 @@ runs:
     - name: Create a new release
       uses: CupOfTea696/gh-action-auto-release@v1.0.2
       with:
-        title: "Release ${{ env.new_version }}"
-        tag: "v${{ env.new_version }}"
+        title: "Release ${{ inputs.version }}"
+        tag: "v${{ inputs.version }}"
         draft: false
-        regex: "/^Release #${{ env.new_version }}$/i"
+        regex: "/^Release #${{ inputs.version }}$/i"
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
 
     - name: Upload to GitHub Packages using Docker
       run: |
         # Building the Docker image
-        docker build -t data-preprocessors .
+        docker build -t ${{ inputs.the_github_repo_name }} .
 
         # Login to Docker Hub
-        echo ${{ inputs.dockerhub_password }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
+        echo ${{ inputs.dockerhub_pat }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
 
         # Login to GitHub Docker Packages
         echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.the_github_username }} --password-stdin
 
         # Tag the image for Docker Hub
-        docker tag data-preprocessors ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ env.new_version }}
+        docker tag ${{ inputs.the_github_repo_name }} ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Tag the image for GitHub Docker Packages
-        docker tag data-preprocessors docker.pkg.github.com/${{ inputs.the_github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ env.new_version }}
+        docker tag data-preprocessors docker.pkg.github.com/${{ inputs.the_github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Push the image to Docker Hub
-        docker push ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ env.new_version }}
+        docker push ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Push the image to GitHub Docker Packages
-        docker push docker.pkg.github.com/${{ inputs.github_username }}/${{ inputs.the_github_repo_name }}//${{ inputs.docker_image_name }}:v${{ env.new_version }}
+        docker push docker.pkg.github.com/${{ inputs.github_username }}/${{ inputs.the_github_repo_name }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
       shell: bash
