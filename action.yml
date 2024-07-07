@@ -1,0 +1,91 @@
+name: 'Auto-PyPI-GitHubPackage-Docker-Release'
+description: 'A GitHub Action for releasing Python packages in PyPI and Docker images in Docker Hub and GitHub Docker Packages.'
+author: 'Md. Musfiqur Rahaman'
+
+branding:
+  icon: 'chevrons-right'
+  color: 'white'
+  
+inputs:
+  version:
+    description: 'Version number for the release.'
+    required: true
+    
+outputs:
+  version:
+    description: 'The version of the release.'
+    
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip3 install --upgrade pip
+        pip3 install -r requirements.txt
+      shell: bash
+
+    - name: Get the current version
+      id: current-version
+      run: echo "version=$(python setup.py --version)" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Check commit message
+      run: |
+        if [[ $(git log -1 --pretty=%B) != "Release v${{ inputs.version }}" ]]; then
+          echo "Commit message does not match the release pattern."
+          exit 1
+        fi
+      shell: bash
+
+    - name: Setup PyPI Package using poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        poetry build
+        poetry config http-basic.pypi ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
+        poetry publish
+      shell: bash
+
+    - name: Create a new release
+      uses: CupOfTea696/gh-action-auto-release@v1.0.2
+      with:
+        title: "Release ${{ inputs.version }}"
+        tag: "v${{ inputs.version }}"
+        draft: false
+        regex: "/^Release #${{ inputs.version }}$/i"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload to GitHub Packages using Docker
+      run: |
+        # Building the Docker image
+        docker build -t data-preprocessors .
+
+        # Login to Docker Hub
+        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+
+        # Login to GitHub Docker Packages
+        docker login docker.pkg.github.com -u ${{ secrets.GITHUB_USERNAME }} -p ${{ secrets.GITHUB_TOKEN }}
+
+        # Tag the image for Docker Hub
+        docker tag data-preprocessors <your-dockerhub-username>/data-preprocessors:v${{ inputs.version }}
+
+        # Tag the image for GitHub Docker Packages
+        docker tag data-preprocessors docker.pkg.github.com/<your-github-username>/<your-repo>/data-preprocessors:v${{ inputs.version }}
+
+        # Push the image to Docker Hub
+        docker push <your-dockerhub-username>/data-preprocessors:v${{ inputs.version }}
+
+        # Push the image to GitHub Docker Packages
+        docker push docker.pkg.github.com/<your-github-username>/<your-repo>/data-preprocessors:v${{ inputs.version }}
+
+      shell: bash
+
+
