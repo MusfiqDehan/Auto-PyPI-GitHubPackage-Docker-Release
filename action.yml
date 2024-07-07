@@ -10,6 +10,24 @@ inputs:
   version:
     description: 'Version number for the release.'
     required: true
+  pypi_username:
+    description: 'PyPI username'
+    required: true
+  pypi_password:
+    description: 'PyPI password'
+    required: true
+  dockerhub_username:
+    description: 'DockerHub username'
+    required: true
+  dockerhub_password:
+    description: 'DockerHub password'
+    required: true
+  github_token:
+    description: 'GitHub token'
+    required: true
+  github_username:
+    description: 'GitHub username'
+    required: true
     
 outputs:
   version:
@@ -49,7 +67,7 @@ runs:
       run: |
         curl -sSL https://install.python-poetry.org | python3 -
         poetry build
-        poetry config http-basic.pypi ${{ secrets.PYPI_USERNAME }} ${{ secrets.PYPI_PASSWORD }}
+        poetry config http-basic.pypi ${{ inputs.pypi_username }} ${{ inputs.pypi_password }}
         poetry publish
       shell: bash
 
@@ -61,7 +79,7 @@ runs:
         draft: false
         regex: "/^Release #${{ inputs.version }}$/i"
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
 
     - name: Upload to GitHub Packages using Docker
       run: |
@@ -69,23 +87,20 @@ runs:
         docker build -t data-preprocessors .
 
         # Login to Docker Hub
-        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+        echo ${{ inputs.dockerhub_password }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
 
         # Login to GitHub Docker Packages
-        docker login docker.pkg.github.com -u ${{ secrets.THE_GITHUB_USERNAME }} -p ${{ secrets.GITHUB_TOKEN }}
+        echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.github_username }} --password-stdin
 
         # Tag the image for Docker Hub
-        docker tag data-preprocessors <your-dockerhub-username>/data-preprocessors:v${{ inputs.version }}
+        docker tag data-preprocessors ${{ inputs.dockerhub_username }}/data-preprocessors:v${{ inputs.version }}
 
         # Tag the image for GitHub Docker Packages
-        docker tag data-preprocessors docker.pkg.github.com/<your-github-username>/<your-repo>/data-preprocessors:v${{ inputs.version }}
+        docker tag data-preprocessors docker.pkg.github.com/${{ inputs.github_username }}/<your-repo>/data-preprocessors:v${{ inputs.version }}
 
         # Push the image to Docker Hub
-        docker push <your-dockerhub-username>/data-preprocessors:v${{ inputs.version }}
+        docker push ${{ inputs.dockerhub_username }}/data-preprocessors:v${{ inputs.version }}
 
         # Push the image to GitHub Docker Packages
-        docker push docker.pkg.github.com/<your-github-username>/<your-repo>/data-preprocessors:v${{ inputs.version }}
-
+        docker push docker.pkg.github.com/${{ inputs.github_username }}/<your-repo>/data-preprocessors:v${{ inputs.version }}
       shell: bash
-
-
