@@ -42,8 +42,10 @@ jobs:
           pypi_token: ${{ secrets.PYPI_API_TOKEN }}
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker_image_name: 'repo-name-image'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           the_github_username: ${{ secrets.THE_GITHUB_USERNAME }}
+          the_github_repo_name: 'repository-name'
 
 
 ```
