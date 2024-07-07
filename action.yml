@@ -87,13 +87,19 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
 
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.dockerhub_username }}
+        password: ${{ inputs.dockerhub_pat }}
+
     - name: Upload to GitHub Packages using Docker
       run: |
         # Building the Docker image
         docker build -t ${{ inputs.the_github_repo_name }} .
 
         # Login to Docker Hub
-        echo ${{ inputs.dockerhub_pat }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
+        # echo ${{ inputs.dockerhub_pat }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
 
         # Login to GitHub Docker Packages
         echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.the_github_username }} --password-stdin
