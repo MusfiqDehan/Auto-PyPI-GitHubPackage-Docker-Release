@@ -44,10 +44,10 @@ jobs:
           dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub_password: ${{ secrets.DOCKERHUB_PASSWORD }}
           dockerhub_pat: ${{ secrets.DOCKERHUB_PAT }}
-          docker_image_name: 'repo-name-image'
+          docker_image_name: ${{ secrets.DOCKER_IMAGE_NAME }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           the_github_username: ${{ secrets.THE_GITHUB_USERNAME }}
-          the_github_repo_name: 'repository-name'
+          the_github_repo_name: ${{ secrets.THE_GITHUB_REPO_NAME }}
 
 
 ```
