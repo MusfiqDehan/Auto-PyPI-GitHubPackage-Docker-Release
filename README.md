@@ -13,6 +13,7 @@ Just type "Release [your version number]", this action will automatically publis
 ## Example Usage
 
 ```yaml
+
 name: Release
 
 on:
@@ -35,14 +36,15 @@ jobs:
         shell: bash
 
       - name: Run Release Action
-        uses: MusfiqDehan/Auto-PyPI-GitHubPackage-Docker-Release@v1.0.0
+        uses: MusfiqDehan/Auto-PyPI-GitHubPackage-Docker-Release@v1.0.1
         with:
           version: ${{ env.version }}
-        env:
-          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          THE_GITHUB_USERNAME: ${{ secrets.THE_GITHUB_USERNAME }}
+          pypi_username: ${{ secrets.PYPI_USERNAME }}
+          pypi_password: ${{ secrets.PYPI_PASSWORD }}
+          dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub_password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          the_github_username: ${{ secrets.THE_GITHUB_USERNAME }}
+
+```
 
