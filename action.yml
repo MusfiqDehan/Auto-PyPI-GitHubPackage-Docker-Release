@@ -19,11 +19,17 @@ inputs:
   dockerhub_password:
     description: 'DockerHub password'
     required: true
+  docker_image_name:
+    description: 'Docker Image Name'
+    required: true
   github_token:
     description: 'GitHub token'
     required: true
   the_github_username:
     description: 'GitHub username'
+    required: true
+  the_github_repo_name:
+    description: 'GitHub Repository Name'
     required: true
     
 outputs:
@@ -90,14 +96,14 @@ runs:
         echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.the_github_username }} --password-stdin
 
         # Tag the image for Docker Hub
-        docker tag data-preprocessors ${{ inputs.dockerhub_username }}/data-preprocessors:v${{ inputs.version }}
+        docker tag data-preprocessors ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Tag the image for GitHub Docker Packages
-        docker tag data-preprocessors docker.pkg.github.com/${{ inputs.github_username }}/<your-repo>/data-preprocessors:v${{ inputs.version }}
+        docker tag data-preprocessors docker.pkg.github.com/${{ inputs.the_github_username }}/${{ inputs.the_github_repo_name }}/${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Push the image to Docker Hub
-        docker push ${{ inputs.dockerhub_username }}/data-preprocessors:v${{ inputs.version }}
+        docker push ${{ inputs.dockerhub_username }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
 
         # Push the image to GitHub Docker Packages
-        docker push docker.pkg.github.com/${{ inputs.github_username }}/<your-repo>/data-preprocessors:v${{ inputs.version }}
+        docker push docker.pkg.github.com/${{ inputs.github_username }}/${{ inputs.the_github_repo_name }}//${{ inputs.docker_image_name }}:v${{ inputs.version }}
       shell: bash
