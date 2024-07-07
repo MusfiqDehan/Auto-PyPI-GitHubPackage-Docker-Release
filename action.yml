@@ -22,7 +22,7 @@ inputs:
   github_token:
     description: 'GitHub token'
     required: true
-  github_username:
+  the_github_username:
     description: 'GitHub username'
     required: true
     
@@ -87,7 +87,7 @@ runs:
         echo ${{ inputs.dockerhub_password }} | docker login -u ${{ inputs.dockerhub_username }} --password-stdin
 
         # Login to GitHub Docker Packages
-        echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.github_username }} --password-stdin
+        echo ${{ inputs.github_token }} | docker login docker.pkg.github.com -u ${{ inputs.the_github_username }} --password-stdin
 
         # Tag the image for Docker Hub
         docker tag data-preprocessors ${{ inputs.dockerhub_username }}/data-preprocessors:v${{ inputs.version }}
