@@ -72,7 +72,7 @@ runs:
         docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
 
         # Login to GitHub Docker Packages
-        docker login docker.pkg.github.com -u ${{ secrets.GITHUB_USERNAME }} -p ${{ secrets.GITHUB_TOKEN }}
+        docker login docker.pkg.github.com -u ${{ secrets.THE_GITHUB_USERNAME }} -p ${{ secrets.GITHUB_TOKEN }}
 
         # Tag the image for Docker Hub
         docker tag data-preprocessors <your-dockerhub-username>/data-preprocessors:v${{ inputs.version }}
